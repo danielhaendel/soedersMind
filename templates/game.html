@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Zahlenratespiel</title>
+  <style>
+    :root {
+      --primary: #2563eb;
+      --accent: #fbbf24;
+      --surface: rgba(255,255,255,0.88);
+      --text-dark: #1f2937;
+      --shadow-md: 0 15px 30px rgba(15,23,42,0.18);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      position: relative;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background: url("background.png") no-repeat center center fixed;
+      background-size: cover;
+      z-index: -2;
+    }
+
+    body::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(15,23,42,0.4), rgba(15,23,42,0.85));
+      z-index: -1;
+    }
+
+    main {
+      flex: 1 0 auto;
+      width: min(1100px, 100%);
+      margin: 0 auto;
+      padding: clamp(2rem,4vw,3.75rem) clamp(1.5rem,4vw,4.5rem);
+      display: flex;
+      flex-direction: column;
+      gap: clamp(2rem,4vw,4rem);
+    }
+
+    header {
+      text-align: center;
+      color: #fff;
+    }
+
+    header h1 {
+      margin: 0 0 .5rem;
+      font-size: clamp(2rem,4vw,3.4rem);
+      font-weight: 700;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(260px,450px) minmax(260px,1fr); /* größer */
+      gap: clamp(1.5rem,4vw,3.5rem);
+      align-items: center;
+    }
+
+    .hero__figure {
+      margin: 0;
+      display: flex;
+      justify-content: flex-end;
+    }
+
+    .hero__frame {
+      position: relative;
+      width: min(450px, 100%); /* größerer Rahmen */
+      border-radius: 1.5rem;
+      overflow: hidden;
+      box-shadow: 0 25px 45px rgba(15,23,42,0.4);
+      border: 4px solid rgba(255,255,255,0.35);
+    }
+
+    .hero__image { width: 100%; height: auto; display: block; }
+
+    .bubble-stack {
+      display: grid;
+      gap: clamp(1.5rem,3vw,2.5rem);
+    }
+
+    .bubble {
+      background: var(--surface);
+      color: var(--text-dark);
+      border-radius: 1.75rem;
+      padding: clamp(1.75rem,3vw,2.75rem);
+      box-shadow: var(--shadow-md);
+      text-align: center;
+    }
+
+    .bubble--thought::after, .bubble--thought::before {
+      content: "";
+      position: absolute;
+      background: var(--surface);
+      box-shadow: var(--shadow-md);
+      border-radius: 50%;
+    }
+    .bubble--thought::after {
+      bottom: clamp(-2.5rem,-4vw,-3rem);
+      left: clamp(-1.5rem,-4vw,-1rem);
+      width: clamp(1.8rem,4vw,2.5rem);
+      height: clamp(1.8rem,4vw,2.5rem);
+    }
+    .bubble--thought::before {
+      bottom: clamp(-4.25rem,-5vw,-4.5rem);
+      left: clamp(-3.2rem,-6vw,-2.4rem);
+      width: clamp(1.1rem,3vw,1.6rem);
+      height: clamp(1.1rem,3vw,1.6rem);
+    }
+
+    .guess-form {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: .8rem;
+      background: none;
+      box-shadow: none;
+      padding: 0;
+    }
+
+    .guess-form label {
+      font-weight: 600;
+      font-size: clamp(1rem,2vw,1.2rem);
+      color: #fff;
+    }
+
+    .guess-input {
+      padding: .9rem 1.25rem;
+      font-size: clamp(1rem,2vw,1.2rem);
+      border-radius: .9rem;
+      border: 2px solid rgba(255,255,255,.7);
+      background: rgba(15,23,42,.35);
+      color: #fff;
+      text-align: center;
+      width: min(300px,80%);
+    }
+
+    .guess-input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 4px rgba(251,191,36,.2);
+      outline: none;
+    }
+
+    .guess-button {
+      padding: .85rem 1.75rem;
+      font-size: clamp(1rem,2vw,1.15rem);
+      border-radius: .9rem;
+      border: none;
+      font-weight: 700;
+      color: #fff;
+      background: linear-gradient(135deg,var(--primary),#4c1d95);
+      box-shadow: 0 10px 20px rgba(37,99,235,.32);
+      cursor: pointer;
+    }
+
+    .guess-button:hover { transform: translateY(-2px); }
+
+    footer {
+      text-align: center;
+      padding: 1rem;
+      color: rgba(255,255,255,.75);
+    }
+
+    @media (max-width:900px){
+      .hero { grid-template-columns: 1fr; justify-items: center; text-align: center; }
+      .hero__figure { justify-content: center; }
+      .bubble-stack { width: min(540px,100%); }
+      .bubble--thought::after,.bubble--thought::before{ left:50%; transform:translateX(-50%);}
+    }
+
+    @media (max-width:640px){
+      main{padding:2rem 1rem;}
+      .hero__frame{max-width:min(300px,80vw);}
+      .guess-input{width:100%;}
+      .bubble--thought::after,.bubble--thought::before{display:none;}
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <h1>Zahlenratespiel</h1>
+    </header>
+
+    <section class="hero">
+      <figure class="hero__figure">
+        <div class="hero__frame">
+          <img class="hero__image" src="söder2.png" alt="Moderator schaut nachdenklich nach rechts.">
+        </div>
+      </figure>
+      <div class="bubble-stack">
+        <article class="bubble bubble--thought">
+          <h2>Ich denke an eine Zahl …</h2>
+          <p>Kannst du erraten, an welche? Überlege gut, bevor du auf den Rate-Button klickst!</p>
+        </article>
+        <article class="bubble">
+          <h2>Spieltipps</h2>
+          <p>Starte mit einer Zahl in der Mitte des möglichen Bereichs und arbeite dich Schritt für Schritt vor. So findest du die Lösung am schnellsten!</p>
+        </article>
+      </div>
+    </section>
+
+    <form class="guess-form">
+      <label for="guess">Geben Sie hier Ihre Zahl ein:</label>
+      <input id="guess" class="guess-input" type="number" placeholder="Ihre Vermutung" min="0" required>
+      <button class="guess-button" type="submit">Raten</button>
+    </form>
+  </main>
+
+  <footer>
+    © <span id="year"></span> Zahlenratespiel. Viel Erfolg beim Raten!
+  </footer>
+
+  <script>
+    document.getElementById("year").textContent = new Date().getFullYear();
+  </script>
+</body>
+</html>
