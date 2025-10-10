@@ -181,15 +181,9 @@ def get_scoreboard(limit=None):
 
 
 @app.route("/")
-@login_required
 def home():
-    return render_template(
-        "index.html",
-        username=current_user.username,
-        first_name=current_user.first_name,
-        last_name=current_user.last_name,
-        email=current_user.email,
-    )
+    scoreboard = get_scoreboard(limit=5)
+    return render_template("index.html", scoreboard=scoreboard)
 
 
 @app.route("/login", methods=["GET", "POST"])
@@ -244,6 +238,12 @@ def register():
 def logout():
     logout_user()
     return redirect(url_for("login"))
+
+
+@app.route("/game")
+@login_required
+def game():
+    return render_template("game.html")
 
 
 with app.app_context():
