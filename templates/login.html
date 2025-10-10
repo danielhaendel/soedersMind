@@ -17,7 +17,7 @@
 {% endwith %}
 <form method="post">
     <label for="username">Benutzername</label>
-    <input id="username" name="username" type="text" required>
+    <input id="username" name="username" type="text" value="{{ request.form.username or '' }}" required>
 
     <label for="password">Passwort</label>
     <input id="password" name="password" type="password" required>
