@@ -21,14 +21,24 @@ login_manager.init_app(app)
 
 
 class User(UserMixin):
-    def __init__(self, user_id, username, password_hash):
+    def __init__(self, user_id, username, password_hash, first_name, last_name, email):
         self.id = user_id  # Flask-Login checks this attribute
         self.username = username
         self.password_hash = password_hash
+        self.first_name = first_name or ""
+        self.last_name = last_name or ""
+        self.email = email or ""
 
     @classmethod
     def from_row(cls, row):
-        return cls(row["id"], row["username"], row["password_hash"])
+        return cls(
+            row["id"],
+            row["username"],
+            row["password_hash"],
+            row["first_name"],
+            row["last_name"],
+            row["email"],
+        )
 
 
 def get_db():
@@ -45,11 +55,27 @@ def init_db():
         CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             username TEXT NOT NULL UNIQUE,
-            password_hash TEXT NOT NULL
+            password_hash TEXT NOT NULL,
+            first_name TEXT,
+            last_name TEXT,
+            email TEXT
         )
         """
     )
+    ensure_user_columns(db)
     db.commit()
+
+
+def ensure_user_columns(db):
+    existing_columns = {row["name"] for row in db.execute("PRAGMA table_info(users)")}
+    required_columns = {
+        "first_name": "TEXT",
+        "last_name": "TEXT",
+        "email": "TEXT",
+    }
+    for column, column_type in required_columns.items():
+        if column not in existing_columns:
+            db.execute(f"ALTER TABLE users ADD COLUMN {column} {column_type}")
 
 
 @app.teardown_appcontext
@@ -66,26 +92,29 @@ def load_user(user_id):
 
 def get_user_by_id(user_id):
     db = get_db()
-    row = db.execute("SELECT id, username, password_hash FROM users WHERE id = ?", (user_id,)).fetchone()
+    row = db.execute(
+        "SELECT id, username, password_hash, first_name, last_name, email FROM users WHERE id = ?",
+        (user_id,),
+    ).fetchone()
     return User.from_row(row) if row else None
 
 
 def get_user_by_username(username):
     db = get_db()
     row = db.execute(
-        "SELECT id, username, password_hash FROM users WHERE username = ?",
+        "SELECT id, username, password_hash, first_name, last_name, email FROM users WHERE username = ?",
         (username,),
     ).fetchone()
     return User.from_row(row) if row else None
 
 
-def create_user(username, password):
+def create_user(username, password, first_name, last_name, email):
     password_hash = generate_password_hash(password)
     db = get_db()
     try:
         db.execute(
-            "INSERT INTO users (username, password_hash) VALUES (?, ?)",
-            (username, password_hash),
+            "INSERT INTO users (username, password_hash, first_name, last_name, email) VALUES (?, ?, ?, ?, ?)",
+            (username, password_hash, first_name, last_name, email),
         )
         db.commit()
     except sqlite3.IntegrityError:
@@ -96,7 +125,13 @@ def create_user(username, password):
 @app.route("/")
 @login_required
 def home():
-    return render_template("index.html", username=current_user.username)
+    return render_template(
+        "index.html",
+        username=current_user.username,
+        first_name=current_user.first_name,
+        last_name=current_user.last_name,
+        email=current_user.email,
+    )
 
 
 @app.route("/login", methods=["GET", "POST"])
@@ -127,12 +162,17 @@ def register():
         username = request.form.get("username", "").strip()
         password = request.form.get("password", "")
         confirm = request.form.get("confirm", "")
+        first_name = request.form.get("first_name", "").strip()
+        last_name = request.form.get("last_name", "").strip()
+        email = request.form.get("email", "").strip()
 
         if not username or not password:
             flash("Bitte einen Benutzernamen und ein Passwort eingeben", "error")
+        elif not first_name or not last_name or not email:
+            flash("Bitte Vorname, Nachname und E-Mail angeben", "error")
         elif password != confirm:
             flash("Passwörter stimmen nicht überein", "error")
-        elif create_user(username, password) is None:
+        elif create_user(username, password, first_name, last_name, email) is None:
             flash("Benutzername ist bereits vergeben", "error")
         else:
             flash("Registrierung erfolgreich. Bitte einloggen.", "success")
