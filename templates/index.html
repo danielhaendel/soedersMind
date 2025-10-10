@@ -1,14 +1,309 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-    <meta charset="UTF-8">
-    <title>Startseite</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Söders Mind – Zahlenratespiel</title>
+  <style>
+    :root {
+      --primary: #2563eb;
+      --accent: #fbbf24;
+      --surface: rgba(255,255,255,0.9);
+      --text-dark: #1f2937;
+      --shadow-md: 0 15px 30px rgba(15,23,42,0.18);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+      color: #fff;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background: url("background.png") no-repeat center center fixed;
+      background-size: cover;
+      z-index: -2;
+    }
+
+    body::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(15,23,42,0.5), rgba(15,23,42,0.9));
+      z-index: -1;
+    }
+
+    main {
+      flex: 1 0 auto;
+      width: min(1100px, 100%);
+      margin: 0 auto;
+      padding: clamp(2rem,4vw,4rem) clamp(1.5rem,4vw,4.5rem);
+      display: flex;
+      flex-direction: column;
+      gap: clamp(2rem,4vw,4rem);
+    }
+
+    header {
+      text-align: center;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: clamp(2.4rem,5vw,3.6rem);
+      font-weight: 700;
+    }
+
+    header p {
+      margin: .75rem auto 0;
+      max-width: 720px;
+      font-size: clamp(1.05rem,2.5vw,1.25rem);
+      color: rgba(255,255,255,0.9);
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(280px, 1fr) minmax(280px, 420px);
+      gap: clamp(2rem,5vw,4rem);
+      align-items: center;
+    }
+
+    .hero__content {
+      display: grid;
+      gap: clamp(1.25rem,3vw,2.25rem);
+      background: rgba(15,23,42,0.55);
+      padding: clamp(1.5rem,3vw,2.5rem);
+      border-radius: 1.5rem;
+      box-shadow: var(--shadow-md);
+    }
+
+    .hero__content h2 {
+      margin: 0;
+      font-size: clamp(1.8rem,3.5vw,2.4rem);
+    }
+
+    .hero__content p {
+      margin: 0;
+      line-height: 1.6;
+      color: rgba(255,255,255,0.9);
+    }
+
+    .cta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .cta a {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: .85rem 1.75rem;
+      border-radius: .9rem;
+      font-weight: 600;
+      text-decoration: none;
+      transition: transform .2s ease, box-shadow .2s ease;
+    }
+
+    .cta__primary {
+      background: linear-gradient(135deg, var(--primary), #4c1d95);
+      color: #fff;
+      box-shadow: 0 12px 24px rgba(37,99,235,0.3);
+    }
+
+    .cta__primary:hover { transform: translateY(-2px); }
+
+    .cta__secondary {
+      background: var(--surface);
+      color: var(--text-dark);
+      box-shadow: var(--shadow-md);
+    }
+
+    .hero__figure {
+      margin: 0;
+      display: flex;
+      justify-content: center;
+    }
+
+    .hero__frame {
+      position: relative;
+      width: min(380px, 100%);
+      border-radius: 1.5rem;
+      overflow: hidden;
+      border: 4px solid rgba(255,255,255,0.35);
+      box-shadow: 0 25px 45px rgba(15,23,42,0.4);
+    }
+
+    .hero__image { width: 100%; height: auto; display: block; }
+
+    .features {
+      display: grid;
+      gap: clamp(1.75rem,3vw,2.5rem);
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    }
+
+    .feature-card {
+      background: var(--surface);
+      color: var(--text-dark);
+      border-radius: 1.5rem;
+      padding: clamp(1.5rem,3vw,2.25rem);
+      box-shadow: var(--shadow-md);
+    }
+
+    .feature-card h3 {
+      margin: 0 0 .75rem;
+      font-size: clamp(1.3rem,2.5vw,1.5rem);
+    }
+
+    .feature-card p {
+      margin: 0;
+      line-height: 1.6;
+      color: rgba(31,41,55,0.85);
+    }
+
+    .scoreboard {
+      background: rgba(15,23,42,0.55);
+      padding: clamp(1.5rem,3vw,2.5rem);
+      border-radius: 1.5rem;
+      box-shadow: var(--shadow-md);
+    }
+
+    .scoreboard header {
+      text-align: left;
+    }
+
+    .scoreboard h2 {
+      margin: 0 0 1rem;
+      font-size: clamp(1.6rem,3vw,2rem);
+    }
+
+    .score-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: grid;
+      gap: .85rem;
+    }
+
+    .score-item {
+      background: var(--surface);
+      color: var(--text-dark);
+      border-radius: 1.1rem;
+      padding: .9rem 1.2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .score-item span {
+      font-weight: 600;
+    }
+
+    .empty-state {
+      margin: 0;
+      color: rgba(255,255,255,0.85);
+    }
+
+    footer {
+      text-align: center;
+      padding: 1.5rem 1rem 2.5rem;
+      color: rgba(255,255,255,0.75);
+      font-size: .95rem;
+    }
+
+    @media (max-width: 900px) {
+      .hero { grid-template-columns: 1fr; }
+      .hero__content { order: 2; }
+      .hero__figure { order: 1; }
+      .hero__frame { width: min(320px, 80vw); }
+    }
+
+    @media (max-width: 640px) {
+      main { padding: 2rem 1.2rem 3rem; }
+      .cta { flex-direction: column; align-items: stretch; }
+      .score-item { flex-direction: column; align-items: flex-start; gap: .35rem; }
+    }
+  </style>
 </head>
 <body>
-<h1>Willkommen, {{ first_name }} {{ last_name }}!</h1>
-<p>Du bist erfolgreich angemeldet.</p>
-<p><strong>Benutzername:</strong> {{ username }}</p>
-<p><strong>E-Mail:</strong> {{ email }}</p>
-<p><a href="{{ url_for('logout') }}">Abmelden</a></p>
+  <main>
+    <header>
+      <h1>Söders Mind</h1>
+      <p>Willkommen beim Zahlenratespiel! Tauch ein in die Gedankenwelt von Markus Söder und versuche mit so wenigen Versuchen wie möglich die geheime Zahl zu erraten.</p>
+    </header>
+
+    <section class="hero">
+      <div class="hero__content">
+        <h2>Wie funktioniert das Spiel?</h2>
+        <p>Du erhältst Hinweise, ob deine Vermutung zu hoch oder zu niedrig ist. Mit jeder Rückmeldung kommst du der geheimen Zahl einen Schritt näher. Nutze deine Intuition – und ein bisschen Logik – um den Highscore zu knacken.</p>
+        <div class="cta">
+          {% if current_user.is_authenticated %}
+            <a class="cta__primary" href="{{ url_for('game') }}">Spiel starten</a>
+            <a class="cta__secondary" href="{{ url_for('logout') }}">Abmelden</a>
+          {% else %}
+            <a class="cta__primary" href="{{ url_for('login') }}">Jetzt einloggen</a>
+            <a class="cta__secondary" href="{{ url_for('register') }}">Registrieren</a>
+          {% endif %}
+        </div>
+      </div>
+      <figure class="hero__figure">
+        <div class="hero__frame">
+          <img class="hero__image" src="söder2.png" alt="Markus Söder freut sich auf das nächste Ratespiel.">
+        </div>
+      </figure>
+    </section>
+
+    <section class="features">
+      <article class="feature-card">
+        <h3>Spannung pur</h3>
+        <p>Jeder Tipp zählt. Hast du die richtige Zahl im Blick oder brauchst du noch eine Eingebung?</p>
+      </article>
+      <article class="feature-card">
+        <h3>Verbessere dich</h3>
+        <p>Analyse deiner Versuche macht dich immer besser. Finde die optimale Strategie für den Highscore.</p>
+      </article>
+      <article class="feature-card">
+        <h3>Gegen die Zeit</h3>
+        <p>Schaffst du es, Markus Söders geheimnisvolle Zahl schneller als alle anderen zu erraten?</p>
+      </article>
+    </section>
+
+    <section class="scoreboard" id="scoreboard">
+      <header>
+        <h2>Top-Spieler</h2>
+        <p>Die besten Ergebnisse der Community – kannst du sie unterbieten?</p>
+      </header>
+      {% if scoreboard %}
+        <ol class="score-list">
+          {% for entry in scoreboard %}
+            <li class="score-item">
+              {% set display_name = (entry.first_name ~ ' ' ~ entry.last_name)|trim %}
+              <span>{{ display_name if display_name else entry.username }}</span>
+              <span>{{ entry.tries }} Versuche</span>
+            </li>
+          {% endfor %}
+        </ol>
+      {% else %}
+        <p class="empty-state">Noch keine Einträge – sei der erste, der einen Rekord aufstellt!</p>
+      {% endif %}
+    </section>
+  </main>
+
+  <footer>
+    © <span id="year"></span> Söders Mind. Viel Erfolg beim Raten!
+  </footer>
+
+  <script>
+    document.getElementById("year").textContent = new Date().getFullYear();
+  </script>
 </body>
 </html>
