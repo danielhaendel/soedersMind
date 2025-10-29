@@ -13,7 +13,7 @@ from werkzeug.security import check_password_hash, generate_password_hash
 DATABASE = "soeder.db"
 
 app = Flask(__name__)
-app.config["SECRET_KEY"] = "change-me"  # replace with a secure secret in production
+app.config["SECRET_KEY"] = "change-me"
 
 login_manager = LoginManager()
 login_manager.login_view = "login"
