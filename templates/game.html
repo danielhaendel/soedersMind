@@ -201,7 +201,36 @@
 
     .game-form {
       display: grid;
-      gap: 1.2rem;
+      gap: 1.35rem;
+    }
+
+    .game-meta {
+      display: inline-flex;
+      align-items: center;
+      gap: .65rem;
+      background: rgba(15,23,42,0.5);
+      padding: .6rem .95rem;
+      border-radius: .85rem;
+      border: 1px solid rgba(255,255,255,0.18);
+      width: fit-content;
+    }
+
+    .game-meta__label {
+      font-size: .75rem;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: rgba(255,255,255,0.62);
+      font-weight: 600;
+    }
+
+    .game-meta__value {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: #fff;
+      padding: .2rem .65rem;
+      border-radius: .65rem;
+      background: rgba(37,99,235,0.28);
+      box-shadow: inset 0 0 14px rgba(37,99,235,0.25);
     }
 
     .game-form label {
@@ -215,6 +244,12 @@
       gap: 1rem;
       flex-wrap: wrap;
       justify-content: flex-start;
+    }
+
+    .game-actions {
+      display: flex;
+      gap: .75rem;
+      flex-wrap: wrap;
     }
 
     .game-input {
@@ -253,13 +288,48 @@
       transform: translateY(-2px);
     }
 
+    .game-button--secondary {
+      background: rgba(255,255,255,0.16);
+      color: #fff;
+      box-shadow: 0 15px 28px rgba(15,23,42,0.25);
+    }
+
+    .game-button--secondary:hover {
+      background: rgba(255,255,255,0.24);
+    }
+
     .game-feedback {
-      background: rgba(15,23,42,0.5);
       border-radius: 1rem;
-      padding: .9rem 1.1rem;
-      border: 1px dashed rgba(255,255,255,0.25);
+      padding: .95rem 1.15rem;
+      border: 1px solid rgba(255,255,255,0.25);
+      background: rgba(15,23,42,0.55);
       color: rgba(255,255,255,0.85);
       font-size: .95rem;
+      line-height: 1.55;
+    }
+
+    .game-feedback--success {
+      border-color: rgba(74,222,128,0.4);
+      background: rgba(74,222,128,0.12);
+      color: #bbf7d0;
+    }
+
+    .game-feedback--error {
+      border-color: rgba(248,113,113,0.45);
+      background: rgba(248,113,113,0.14);
+      color: #fecaca;
+    }
+
+    .game-feedback--hint {
+      border-color: rgba(251,191,36,0.4);
+      background: rgba(251,191,36,0.15);
+      color: #fde68a;
+    }
+
+    .game-feedback--info {
+      border-color: rgba(96,165,250,0.4);
+      background: rgba(37,99,235,0.18);
+      color: rgba(191,219,254,0.98);
     }
 
     .game-hint {
@@ -444,15 +514,37 @@
       <div class="hero__content">
         <h2>Starte deinen nächsten Versuch</h2>
         <p>Gib eine Zahl ein, bestätige sie und verfolge deine Fortschritte. Die Hinweise zeigen dir sofort, ob du höher oder niedriger tippen musst.</p>
-        <form class="game-form">
+        <form class="game-form" method="post">
+          <div class="game-meta">
+            <span class="game-meta__label">Versuche in dieser Runde</span>
+            <span class="game-meta__value">{{ current_attempts }}</span>
+          </div>
           <label for="guess">Deine Schätzung</label>
           <div class="game-form__controls">
-            <input id="guess" class="game-input" type="number" placeholder="Zahl zwischen 0 und 100" min="0" max="100" required>
-            <button class="game-button" type="submit">Raten</button>
+            <input
+              id="guess"
+              name="guess"
+              class="game-input"
+              type="number"
+              placeholder="Zahl zwischen 0 und 100"
+              min="0"
+              max="100"
+              value="{{ guess_value }}"
+              required>
+            <button class="game-button" type="submit" name="action" value="guess">Raten</button>
           </div>
-          <div class="game-feedback" data-role="feedback">
-            Noch kein Tipp abgegeben – leg los und sichere dir den Highscore!
+          <div class="game-actions">
+            <button class="game-button game-button--secondary" type="submit" name="action" value="reset">Neue Zahl starten</button>
           </div>
+          {% if feedback %}
+            <div class="game-feedback game-feedback--{{ feedback_type or 'info' }}">
+              {{ feedback }}
+            </div>
+          {% else %}
+            <div class="game-feedback">
+              Noch kein Tipp abgegeben – leg los und sichere dir den Highscore!
+            </div>
+          {% endif %}
           <p class="game-hint">Tipp: Beginne in der Mitte und arbeite dich mit den Hinweisen Schritt für Schritt vor.</p>
         </form>
       </div>
