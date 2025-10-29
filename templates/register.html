@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title>Registrierung</title>
+</head>
+<body>
+<h1>Registrierung</h1>
+{% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+        <ul>
+        {% for category, message in messages %}
+            <li>{{ message }}</li>
+        {% endfor %}
+        </ul>
+    {% endif %}
+{% endwith %}
+<form method="post">
+    <label for="first_name">Vorname</label>
+    <input id="first_name" name="first_name" type="text" value="{{ request.form.first_name or '' }}" required>
+
+    <label for="last_name">Nachname</label>
+    <input id="last_name" name="last_name" type="text" value="{{ request.form.last_name or '' }}" required>
+
+    <label for="email">E-Mail</label>
+    <input id="email" name="email" type="email" value="{{ request.form.email or '' }}" required>
+
+    <label for="username">Benutzername</label>
+    <input id="username" name="username" type="text" value="{{ request.form.username or '' }}" required>
+
+    <label for="password">Passwort</label>
+    <input id="password" name="password" type="password" required>
+
+    <label for="confirm">Passwort bestätigen</label>
+    <input id="confirm" name="confirm" type="password" required>
+
+    <button type="submit">Konto erstellen</button>
+</form>
+<p>Bereits registriert? <a href="{{ url_for('login') }}">Zum Login</a></p>
+</body>
+</html>
