@@ -243,7 +243,8 @@ def logout():
 @app.route("/game")
 @login_required
 def game():
-    return render_template("game.html")
+    scoreboard = get_scoreboard(limit=5)
+    return render_template("game.html", scoreboard=scoreboard)
 
 
 with app.app_context():

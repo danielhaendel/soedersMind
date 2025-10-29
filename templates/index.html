@@ -43,6 +43,89 @@
       z-index: -1;
     }
 
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+      padding: .9rem 1.5rem;
+      background: rgba(15,23,42,0.6);
+      border-radius: 1.1rem;
+      box-shadow: var(--shadow-md);
+      backdrop-filter: blur(12px);
+    }
+
+    .brand {
+      color: #fff;
+      font-weight: 700;
+      letter-spacing: .04em;
+      text-decoration: none;
+      font-size: clamp(1.2rem,2vw,1.4rem);
+      display: inline-flex;
+      align-items: center;
+      gap: .4rem;
+    }
+
+    .user-bar {
+      display: flex;
+      align-items: center;
+      gap: .75rem;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .user-bar__greeting {
+      color: rgba(255,255,255,0.75);
+      font-size: .9rem;
+    }
+
+    .user-bar__name {
+      font-weight: 600;
+      font-size: 1rem;
+      color: #fff;
+    }
+
+    .user-bar__actions {
+      display: flex;
+      align-items: center;
+      gap: .65rem;
+      flex-wrap: wrap;
+    }
+
+    .user-bar__action {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: .55rem 1.1rem;
+      border-radius: .95rem;
+      font-weight: 600;
+      text-decoration: none;
+      background: rgba(255,255,255,0.12);
+      color: #fff;
+      transition: transform .2s ease, box-shadow .2s ease, background .2s ease;
+    }
+
+    .user-bar__action:hover {
+      transform: translateY(-1px);
+      background: rgba(255,255,255,0.18);
+      box-shadow: 0 12px 24px rgba(15,23,42,0.22);
+    }
+
+    .user-bar__action--accent {
+      background: linear-gradient(135deg, var(--accent), #f97316);
+      color: var(--text-dark);
+      box-shadow: 0 12px 28px rgba(251,191,36,0.28);
+    }
+
+    .user-bar__action--logout {
+      background: rgba(248,113,113,0.18);
+      color: #fecaca;
+    }
+
+    .user-bar__action--logout:hover {
+      background: rgba(248,113,113,0.28);
+    }
+
     main {
       flex: 1 0 auto;
       width: min(1100px, 100%);
@@ -236,6 +319,25 @@
 </head>
 <body>
   <main>
+    <nav class="top-bar">
+      <a class="brand" href="{{ url_for('home') }}">Söders Mind</a>
+      <div class="user-bar">
+        {% if current_user.is_authenticated %}
+          {% set display_name = (current_user.first_name ~ ' ' ~ current_user.last_name)|trim %}
+          <span class="user-bar__greeting">Eingeloggt als</span>
+          <span class="user-bar__name">{{ display_name if display_name else current_user.username }}</span>
+          <div class="user-bar__actions">
+            <a class="user-bar__action user-bar__action--logout" href="{{ url_for('logout') }}">Abmelden</a>
+          </div>
+        {% else %}
+          <div class="user-bar__actions">
+            <a class="user-bar__action" href="{{ url_for('login') }}">Einloggen</a>
+            <a class="user-bar__action user-bar__action--accent" href="{{ url_for('register') }}">Registrieren</a>
+          </div>
+        {% endif %}
+      </div>
+    </nav>
+
     <header>
       <h1>Söders Mind</h1>
       <p>Willkommen beim Zahlenratespiel! Tauch ein in die Gedankenwelt von Markus Söder und versuche mit so wenigen Versuchen wie möglich die geheime Zahl zu erraten.</p>
