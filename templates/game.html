@@ -550,7 +550,7 @@
 
       <figure class="hero__figure">
         <div class="hero__frame">
-          <img class="hero__image" src="{{ url_for('static', filename='img/söder2.png') }}" alt="Markus Söder fiebert der nächsten Runde entgegen.">
+          <img id="soeder-image" class="hero__image" src="{{ image_url }}" alt="Markus Söder fiebert der nächsten Runde entgegen.">
         </div>
       </figure>
     </section>
@@ -654,6 +654,12 @@
           // update guess input value
           const guessEl = document.getElementById('guess');
           if (guessEl) guessEl.value = data.guess_value || '';
+
+          // update soeder image
+          const soederImg = document.getElementById('soeder-image');
+          if (soederImg && data.image_url) {
+            soederImg.src = data.image_url;
+          }
 
           // update scoreboard fragment
           if (data.scoreboard_html !== undefined) {

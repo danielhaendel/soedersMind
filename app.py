@@ -181,6 +181,22 @@ def get_scoreboard(limit=None):
     return [dict(row) for row in rows]
 
 
+def get_soeder_image_url(attempts: int, won: bool = False):
+    """Return the static URL for the soeder image based on attempts or win state.
+
+    - At start (attempts == 0) -> soeder_1.png
+    - Each attempt increases the index: attempts=1 -> soeder_2.png, ...
+    - Max index is 12 -> soeder_12.png
+    - If won is True -> soeder_win.png
+    """
+    if won:
+        filename = "img/soeder_win.png"
+    else:
+        index = min(attempts + 1, 12)
+        filename = f"img/soeder_{index}.png"
+    return url_for("static", filename=filename)
+
+
 @app.route("/")
 def home():
     scoreboard = get_scoreboard(limit=5)
@@ -303,6 +319,12 @@ def game():
                             guess_value = ""
 
     scoreboard = get_scoreboard(limit=5)
+    # determine image URL (win takes precedence)
+    if latest_score is not None:
+        image_url = get_soeder_image_url(0, won=True)
+    else:
+        image_url = get_soeder_image_url(session.get("attempts", 0), won=False)
+
     # If this was an AJAX request, return JSON so the client can update without a full reload
     is_ajax = request.headers.get("X-Requested-With") == "XMLHttpRequest" or (
         request.headers.get("Accept", "").find("application/json") != -1
@@ -315,6 +337,7 @@ def game():
                 "current_attempts": session.get("attempts", 0),
                 "latest_score": latest_score,
                 "guess_value": guess_value,
+                "image_url": image_url,
                 # return rendered scoreboard fragment so the client can replace it easily
                 "scoreboard_html": render_template("scoreboard_fragment.html", scoreboard=scoreboard),
             }
@@ -328,6 +351,7 @@ def game():
         current_attempts=session.get("attempts", 0),
         latest_score=latest_score,
         guess_value=guess_value,
+        image_url=image_url,
     )
 
 
