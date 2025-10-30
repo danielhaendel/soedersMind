@@ -1,6 +1,6 @@
 import random
 import sqlite3
-from flask import Flask, render_template, g, redirect, url_for, request, flash, session
+from flask import Flask, render_template, g, redirect, url_for, request, flash, session, jsonify
 from flask_login import (
     LoginManager,
     UserMixin,
@@ -303,6 +303,23 @@ def game():
                             guess_value = ""
 
     scoreboard = get_scoreboard(limit=5)
+    # If this was an AJAX request, return JSON so the client can update without a full reload
+    is_ajax = request.headers.get("X-Requested-With") == "XMLHttpRequest" or (
+        request.headers.get("Accept", "").find("application/json") != -1
+    )
+    if is_ajax:
+        return jsonify(
+            {
+                "feedback": feedback,
+                "feedback_type": feedback_type,
+                "current_attempts": session.get("attempts", 0),
+                "latest_score": latest_score,
+                "guess_value": guess_value,
+                # return rendered scoreboard fragment so the client can replace it easily
+                "scoreboard_html": render_template("scoreboard_fragment.html", scoreboard=scoreboard),
+            }
+        )
+
     return render_template(
         "game.html",
         scoreboard=scoreboard,

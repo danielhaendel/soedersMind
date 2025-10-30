@@ -514,12 +514,13 @@
       <div class="hero__content">
         <h2>Starte deinen nächsten Versuch</h2>
         <p>Gib eine Zahl ein, bestätige sie und verfolge deine Fortschritte. Die Hinweise zeigen dir sofort, ob du höher oder niedriger tippen musst.</p>
-        <form class="game-form" method="post">
+        <form id="game-form" class="game-form" method="post">
           <div class="game-meta">
             <span class="game-meta__label">Versuche in dieser Runde</span>
-            <span class="game-meta__value">{{ current_attempts }}</span>
+            <span id="attempts-value" class="game-meta__value">{{ current_attempts }}</span>
           </div>
           <label for="guess">Deine Schätzung</label>
+          <input type="hidden" name="action" id="action-input" value="guess">
           <div class="game-form__controls">
             <input
               id="guess"
@@ -536,15 +537,13 @@
           <div class="game-actions">
             <button class="game-button game-button--secondary" type="submit" name="action" value="reset">Neue Zahl starten</button>
           </div>
-          {% if feedback %}
-            <div class="game-feedback game-feedback--{{ feedback_type or 'info' }}">
+          <div id="feedback" class="game-feedback {% if feedback %}game-feedback--{{ feedback_type or 'info' }}{% endif %}">
+            {% if feedback %}
               {{ feedback }}
-            </div>
-          {% else %}
-            <div class="game-feedback">
+            {% else %}
               Noch kein Tipp abgegeben – leg los und sichere dir den Highscore!
-            </div>
-          {% endif %}
+            {% endif %}
+          </div>
           <p class="game-hint">Tipp: Beginne in der Mitte und arbeite dich mit den Hinweisen Schritt für Schritt vor.</p>
         </form>
       </div>
@@ -556,7 +555,7 @@
       </figure>
     </section>
 
-    <section class="game-sections">
+  <section class="game-sections">
       <article class="feature-card">
         <h3>Spieltipps</h3>
         <p>Beobachte, wie sich der Bereich deiner möglichen Zahlen einschränkt, und reagiere clever auf die Hinweise.</p>
@@ -572,7 +571,7 @@
       </article>
     </section>
 
-    <section class="scoreboard">
+  <section id="scoreboard" class="scoreboard">
       <header>
         <h2>Highscores</h2>
         <p>Diese Spielerinnen und Spieler haben Söders Zahl bereits geknackt.</p>
@@ -599,6 +598,75 @@
 
   <script>
     document.getElementById("year").textContent = new Date().getFullYear();
+
+    (function () {
+      // Ensure the proper action value is sent based on which submit button was clicked
+      const form = document.getElementById('game-form');
+      if (!form) return;
+      const actionInput = document.getElementById('action-input');
+      const submitButtons = form.querySelectorAll('button[type="submit"]');
+      submitButtons.forEach((btn) => {
+        btn.addEventListener('click', function () {
+          if (actionInput) actionInput.value = btn.value || 'guess';
+        });
+      });
+
+      form.addEventListener('submit', async function (ev) {
+        ev.preventDefault();
+        const fd = new FormData(form);
+        try {
+          // Use the form action attribute explicitly. Accessing `form.action` in JS
+          // can be shadowed by form controls named "action" (we have such an input),
+          // which yields an element or RadioNodeList instead of the URL string.
+          const url = form.getAttribute('action') || '/game';
+          const resp = await fetch(url, {
+            method: 'POST',
+            headers: {
+              'X-Requested-With': 'XMLHttpRequest',
+              'Accept': 'application/json',
+            },
+            body: fd,
+          });
+
+          if (!resp.ok) {
+            console.error('Server returned', resp.status);
+            return;
+          }
+
+          const data = await resp.json();
+
+          // update attempts
+          const attemptsEl = document.getElementById('attempts-value');
+          if (attemptsEl && data.current_attempts !== undefined) {
+            attemptsEl.textContent = data.current_attempts;
+          }
+
+          // update feedback
+          const feedbackEl = document.getElementById('feedback');
+          if (feedbackEl) {
+            feedbackEl.classList.remove('game-feedback--success', 'game-feedback--error', 'game-feedback--hint', 'game-feedback--info');
+            if (data.feedback_type) {
+              feedbackEl.classList.add('game-feedback--' + data.feedback_type);
+            }
+            feedbackEl.textContent = data.feedback || '';
+          }
+
+          // update guess input value
+          const guessEl = document.getElementById('guess');
+          if (guessEl) guessEl.value = data.guess_value || '';
+
+          // update scoreboard fragment
+          if (data.scoreboard_html !== undefined) {
+            const scoreboard = document.getElementById('scoreboard');
+            if (scoreboard) {
+              scoreboard.innerHTML = data.scoreboard_html;
+            }
+          }
+        } catch (err) {
+          console.error('Request failed', err);
+        }
+      });
+    })();
   </script>
 </body>
 </html>
