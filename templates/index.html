@@ -320,19 +320,19 @@
 <body>
   <main>
     <nav class="top-bar">
-      <a class="brand" href="{{ url_for('home') }}">Söders Mind</a>
+      <a class="brand" href="{{ url_for('main.home') }}">Söders Mind</a>
       <div class="user-bar">
         {% if current_user.is_authenticated %}
           {% set display_name = (current_user.first_name ~ ' ' ~ current_user.last_name)|trim %}
           <span class="user-bar__greeting">Eingeloggt als</span>
           <span class="user-bar__name">{{ display_name if display_name else current_user.username }}</span>
           <div class="user-bar__actions">
-            <a class="user-bar__action user-bar__action--logout" href="{{ url_for('logout') }}">Abmelden</a>
+            <a class="user-bar__action user-bar__action--logout" href="{{ url_for('auth.logout') }}">Abmelden</a>
           </div>
         {% else %}
           <div class="user-bar__actions">
-            <a class="user-bar__action" href="{{ url_for('login') }}">Einloggen</a>
-            <a class="user-bar__action user-bar__action--accent" href="{{ url_for('register') }}">Registrieren</a>
+            <a class="user-bar__action" href="{{ url_for('auth.login') }}">Einloggen</a>
+            <a class="user-bar__action user-bar__action--accent" href="{{ url_for('auth.register') }}">Registrieren</a>
           </div>
         {% endif %}
       </div>
@@ -349,17 +349,17 @@
         <p>Du erhältst Hinweise, ob deine Vermutung zu hoch oder zu niedrig ist. Mit jeder Rückmeldung kommst du der geheimen Zahl einen Schritt näher. Nutze deine Intuition – und ein bisschen Logik – um den Highscore zu knacken.</p>
         <div class="cta">
           {% if current_user.is_authenticated %}
-            <a class="cta__primary" href="{{ url_for('game') }}">Spiel starten</a>
-            <a class="cta__secondary" href="{{ url_for('logout') }}">Abmelden</a>
+            <a class="cta__primary" href="{{ url_for('game.game') }}">Spiel starten</a>
+            <a class="cta__secondary" href="{{ url_for('auth.logout') }}">Abmelden</a>
           {% else %}
-            <a class="cta__primary" href="{{ url_for('login') }}">Jetzt einloggen</a>
-            <a class="cta__secondary" href="{{ url_for('register') }}">Registrieren</a>
+            <a class="cta__primary" href="{{ url_for('auth.login') }}">Jetzt einloggen</a>
+            <a class="cta__secondary" href="{{ url_for('auth.register') }}">Registrieren</a>
           {% endif %}
         </div>
       </div>
       <figure class="hero__figure">
         <div class="hero__frame">
-          <img class="hero__image" src="{{ url_for('static', filename='img/söder2.png') }}" alt="Markus Söder freut sich auf das nächste Ratespiel.">
+          <img class="hero__image" src="{{ url_for('static', filename='img/soeder_2.png') }}" alt="Markus Söder freut sich auf das nächste Ratespiel.">
         </div>
       </figure>
     </section>

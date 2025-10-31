@@ -185,7 +185,7 @@
 <body>
   <main>
     <section class="auth-card">
-      <a class="home-link" href="{{ url_for('home') }}">Startseite</a>
+      <a class="home-link" href="{{ url_for('main.home') }}">Startseite</a>
       <header>
         <h1>Konto erstellen</h1>
         <p>Registriere dich, sichere dir deinen Highscore und werde Teil der Community.</p>
@@ -238,7 +238,7 @@
       </form>
 
       <footer>
-        Bereits registriert? <a class="auth-link" href="{{ url_for('login') }}">Zum Login</a>
+        Bereits registriert? <a class="auth-link" href="{{ url_for('auth.login') }}">Zum Login</a>
       </footer>
     </section>
   </main>
