@@ -510,19 +510,19 @@
 <body>
   <main>
     <nav class="top-bar">
-      <a class="brand" href="{{ url_for('home') }}">Söders Mind</a>
+      <a class="brand" href="{{ url_for('main.home') }}">Söders Mind</a>
       <div class="user-bar">
         {% if current_user.is_authenticated %}
           {% set display_name = (current_user.first_name ~ ' ' ~ current_user.last_name)|trim %}
           <span class="user-bar__greeting">Eingeloggt als</span>
           <span class="user-bar__name">{{ display_name if display_name else current_user.username }}</span>
           <div class="user-bar__actions">
-            <a class="user-bar__action user-bar__action--logout" href="{{ url_for('logout') }}">Abmelden</a>
+            <a class="user-bar__action user-bar__action--logout" href="{{ url_for('auth.logout') }}">Abmelden</a>
           </div>
         {% else %}
           <div class="user-bar__actions">
-            <a class="user-bar__action" href="{{ url_for('login') }}">Einloggen</a>
-            <a class="user-bar__action" href="{{ url_for('register') }}">Registrieren</a>
+            <a class="user-bar__action" href="{{ url_for('auth.login') }}">Einloggen</a>
+            <a class="user-bar__action" href="{{ url_for('auth.register') }}">Registrieren</a>
           </div>
         {% endif %}
       </div>
@@ -543,7 +543,6 @@
             <span id="attempts-value" class="game-meta__value">{{ current_attempts }}</span>
           </div>
           <label for="guess">Deine Schätzung</label>
-          <input type="hidden" name="action" id="action-input" value="guess">
           <div class="game-form__controls">
             <input
               id="guess"
@@ -620,82 +619,10 @@
   </footer>
 
   <script>
-    document.getElementById("year").textContent = new Date().getFullYear();
-
-    (function () {
-      // Ensure the proper action value is sent based on which submit button was clicked
-      const form = document.getElementById('game-form');
-      if (!form) return;
-      const actionInput = document.getElementById('action-input');
-      const submitButtons = form.querySelectorAll('button[type="submit"]');
-      submitButtons.forEach((btn) => {
-        btn.addEventListener('click', function () {
-          if (actionInput) actionInput.value = btn.value || 'guess';
-        });
-      });
-
-      form.addEventListener('submit', async function (ev) {
-        ev.preventDefault();
-        const fd = new FormData(form);
-        try {
-          // Use the form action attribute explicitly. Accessing `form.action` in JS
-          // can be shadowed by form controls named "action" (we have such an input),
-          // which yields an element or RadioNodeList instead of the URL string.
-          const url = form.getAttribute('action') || '/game';
-          const resp = await fetch(url, {
-            method: 'POST',
-            headers: {
-              'X-Requested-With': 'XMLHttpRequest',
-              'Accept': 'application/json',
-            },
-            body: fd,
-          });
-
-          if (!resp.ok) {
-            console.error('Server returned', resp.status);
-            return;
-          }
-
-          const data = await resp.json();
-
-          // update attempts
-          const attemptsEl = document.getElementById('attempts-value');
-          if (attemptsEl && data.current_attempts !== undefined) {
-            attemptsEl.textContent = data.current_attempts;
-          }
-
-          // update feedback
-          const feedbackEl = document.getElementById('feedback');
-          if (feedbackEl) {
-            feedbackEl.classList.remove('game-feedback--success', 'game-feedback--error', 'game-feedback--hint', 'game-feedback--info');
-            if (data.feedback_type) {
-              feedbackEl.classList.add('game-feedback--' + data.feedback_type);
-            }
-            feedbackEl.textContent = data.feedback || '';
-          }
-
-          // update guess input value
-          const guessEl = document.getElementById('guess');
-          if (guessEl) guessEl.value = data.guess_value || '';
-
-          // update soeder image
-          const soederImg = document.getElementById('soeder-image');
-          if (soederImg && data.image_url) {
-            soederImg.src = data.image_url;
-          }
-
-          // update scoreboard fragment
-          if (data.scoreboard_html !== undefined) {
-            const scoreboard = document.getElementById('scoreboard');
-            if (scoreboard) {
-              scoreboard.innerHTML = data.scoreboard_html;
-            }
-          }
-        } catch (err) {
-          console.error('Request failed', err);
-        }
-      });
-    })();
+    const yearLabel = document.getElementById("year");
+    if (yearLabel) {
+      yearLabel.textContent = new Date().getFullYear();
+    }
   </script>
 </body>
 </html>
