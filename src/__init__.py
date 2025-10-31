@@ -1,4 +1,7 @@
+from __future__ import annotations
+
 import os
+from typing import Optional
 
 from flask import Flask
 
@@ -10,19 +13,25 @@ from src.routes.main import main_bp
 from src.services.users import get_user_by_id
 
 
-def create_app() -> Flask:
+def create_app(config: Optional[dict] = None) -> Flask:
+    """
+    Application factory, optionally accepting configuration overrides.
+    """
     app = Flask(__name__, static_folder="../static", template_folder="../templates")
 
-    secret_key = os.environ.get("FLASK_SECRET_KEY") or app.config.get("SECRET_KEY")
-    database_path = os.environ.get("DATABASE_PATH") or app.config.get("DATABASE")
+    env_secret = os.environ.get("FLASK_SECRET_KEY")
+    env_database = os.environ.get("DATABASE_PATH")
 
-    if not secret_key:
-        secret_key = "change-me"
-    if not database_path:
-        database_path = "soeder.db"
+    if env_secret:
+        app.config["SECRET_KEY"] = env_secret
+    if env_database:
+        app.config["DATABASE"] = env_database
 
-    app.config["SECRET_KEY"] = secret_key
-    app.config["DATABASE"] = database_path
+    if config:
+        app.config.update(config)
+
+    app.config.setdefault("SECRET_KEY", "change-me")
+    app.config.setdefault("DATABASE", "soeder.db")
 
     login_manager.init_app(app)
     login_manager.login_view = "auth.login"

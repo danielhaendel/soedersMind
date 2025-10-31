@@ -76,6 +76,5 @@ def create_user(
         )
         db.commit()
     except sqlite3.IntegrityError:
-        # Integritätsverletzung -> Benutzername bereits vergeben
         return None
     return get_user_by_username(username)
