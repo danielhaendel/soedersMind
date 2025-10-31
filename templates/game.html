@@ -189,11 +189,34 @@
       width: min(380px, 100%);
       border-radius: 1.5rem;
       overflow: hidden;
-      border: 4px solid rgba(255,255,255,0.35);
+  /* dunklerer Rahmen für stärkeren Kontrast */
+  border: 4px solid rgba(31,41,55,0.95);
       box-shadow: 0 25px 45px rgba(15,23,42,0.4);
+      /* keep frame visuals (border / shadow) above the flag pseudo-layer */
+      background: transparent;
+    }
+
+    /* flag background as a pseudo element so border/box-shadow stay on top
+       and we can control the flag opacity separately */
+    .hero__frame::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      /* place the flag and darken it slightly by compositing a semi-transparent
+         black gradient using multiply blend mode */
+      background: linear-gradient(rgba(0,0,0,0.35), rgba(0,0,0,0.35)), url("{{ url_for('static', filename='img/flagge.jpg') }}");
+      background-position: center;
+      background-size: cover;
+      background-repeat: no-repeat;
+      background-blend-mode: multiply;
+      z-index: 0;
+      border-radius: inherit;
+      pointer-events: none;
     }
 
     .hero__image {
+      position: relative;
+      z-index: 2;
       width: 100%;
       height: auto;
       display: block;
