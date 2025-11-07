@@ -12,6 +12,8 @@ from src.routes.game import game_bp
 from src.routes.main import main_bp
 from src.services.users import get_user_by_id
 
+DEFAULT_SECRET_KEY = "9de54ca7ef907e68f25270e1355574e338a7f96de50db4cda4bd879035d66760"
+
 
 def create_app(config: Optional[dict] = None) -> Flask:
     """
@@ -30,7 +32,8 @@ def create_app(config: Optional[dict] = None) -> Flask:
     if config:
         app.config.update(config)
 
-    app.config.setdefault("SECRET_KEY", "change-me")
+    if not app.config.get("SECRET_KEY"):
+        app.config["SECRET_KEY"] = DEFAULT_SECRET_KEY
     app.config.setdefault("DATABASE", "soeder.db")
 
     login_manager.init_app(app)
