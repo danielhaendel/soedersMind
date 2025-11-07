@@ -1,3 +1,6 @@
 /.venv/
 /soeder.db
 /.idea/
+# Byte-compiled / cache files
+__pycache__/
+*.py[cod]
