@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Söders Mind – Registrierung</title>
+  <style>
+    :root {
+      --primary: #2563eb;
+      --accent: #fbbf24;
+      --surface: rgba(255,255,255,0.9);
+      --text-dark: #1f2937;
+      --shadow-md: 0 15px 30px rgba(15,23,42,0.18);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: clamp(1.5rem,4vw,3rem);
+      position: relative;
+      overflow: hidden;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background: url("{{ url_for('static', filename='img/background.png') }}") no-repeat center center fixed;
+      background-size: cover;
+      z-index: -2;
+    }
+
+    body::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background: linear-gradient(180deg, rgba(15,23,42,0.6), rgba(15,23,42,0.95));
+      z-index: -1;
+    }
+
+    main {
+      width: min(540px, 100%);
+    }
+
+    .auth-card {
+      background: rgba(15,23,42,0.65);
+      padding: clamp(2rem,4vw,2.75rem);
+      border-radius: 1.5rem;
+      box-shadow: var(--shadow-md);
+      display: grid;
+      gap: clamp(1.5rem,3vw,2rem);
+      position: relative;
+    }
+
+    .home-link {
+      position: absolute;
+      top: 1.25rem;
+      right: 1.5rem;
+      color: rgba(255,255,255,0.85);
+      text-decoration: none;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: .35rem;
+      font-size: .95rem;
+    }
+
+    .home-link::before {
+      content: "←";
+      font-size: 1rem;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: clamp(2rem,4vw,2.5rem);
+    }
+
+    header p {
+      margin: .75rem 0 0;
+      color: rgba(255,255,255,0.85);
+      line-height: 1.6;
+    }
+
+    .flash-messages {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: grid;
+      gap: .75rem;
+    }
+
+    .flash-message {
+      background: var(--surface);
+      color: var(--text-dark);
+      border-radius: .9rem;
+      padding: .85rem 1rem;
+      font-weight: 500;
+      box-shadow: 0 10px 20px rgba(15,23,42,0.18);
+    }
+
+    .auth-form {
+      display: grid;
+      gap: 1.15rem;
+    }
+
+    .auth-form__row {
+      display: grid;
+      gap: 1rem;
+    }
+
+    @media (min-width: 600px) {
+      .auth-form__row--split {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    .auth-group {
+      display: grid;
+      gap: .45rem;
+    }
+
+    label {
+      font-weight: 600;
+      font-size: .95rem;
+    }
+
+    input {
+      width: 100%;
+      padding: .85rem 1rem;
+      border: 1px solid rgba(255,255,255,0.25);
+      border-radius: .85rem;
+      background: rgba(15,23,42,0.55);
+      color: #fff;
+      transition: border-color .2s ease, box-shadow .2s ease;
+    }
+
+    input:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(251,191,36,0.35);
+    }
+
+    .auth-button {
+      margin-top: .5rem;
+      padding: .95rem 1rem;
+      border: none;
+      border-radius: .95rem;
+      background: linear-gradient(135deg, var(--primary), #4c1d95);
+      color: #fff;
+      font-weight: 600;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: transform .2s ease, box-shadow .2s ease;
+      box-shadow: 0 15px 30px rgba(37,99,235,0.28);
+    }
+
+    .auth-button:hover {
+      transform: translateY(-2px);
+    }
+
+    footer {
+      text-align: center;
+      color: rgba(255,255,255,0.85);
+      font-size: .95rem;
+    }
+
+    .auth-link {
+      color: var(--accent);
+      font-weight: 600;
+      text-decoration: none;
+    }
+
+    .auth-link:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <section class="auth-card">
+      <a class="home-link" href="{{ url_for('main.home') }}">Startseite</a>
+      <header>
+        <h1>Konto erstellen</h1>
+        <p>Registriere dich, sichere dir deinen Highscore und werde Teil der Community.</p>
+      </header>
+
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          <ul class="flash-messages">
+            {% for category, message in messages %}
+              <li class="flash-message">{{ message }}</li>
+            {% endfor %}
+          </ul>
+        {% endif %}
+      {% endwith %}
+
+      <form class="auth-form" method="post">
+        <div class="auth-form__row auth-form__row--split">
+          <div class="auth-group">
+            <label for="first_name">Vorname</label>
+            <input id="first_name" name="first_name" type="text" value="{{ request.form.first_name or '' }}" required>
+          </div>
+          <div class="auth-group">
+            <label for="last_name">Nachname</label>
+            <input id="last_name" name="last_name" type="text" value="{{ request.form.last_name or '' }}" required>
+          </div>
+        </div>
+
+        <div class="auth-group">
+          <label for="email">E-Mail</label>
+          <input id="email" name="email" type="email" value="{{ request.form.email or '' }}" required>
+        </div>
+
+        <div class="auth-group">
+          <label for="username">Benutzername</label>
+          <input id="username" name="username" type="text" value="{{ request.form.username or '' }}" required>
+        </div>
+
+        <div class="auth-form__row auth-form__row--split">
+          <div class="auth-group">
+            <label for="password">Passwort</label>
+            <input id="password" name="password" type="password" required>
+          </div>
+          <div class="auth-group">
+            <label for="confirm">Passwort bestätigen</label>
+            <input id="confirm" name="confirm" type="password" required>
+          </div>
+        </div>
+
+        <button class="auth-button" type="submit">Konto erstellen</button>
+      </form>
+
+      <footer>
+        Bereits registriert? <a class="auth-link" href="{{ url_for('auth.login') }}">Zum Login</a>
+      </footer>
+    </section>
+  </main>
+</body>
+</html>
