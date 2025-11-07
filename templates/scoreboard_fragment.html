@@ -1,0 +1,18 @@
+<header>
+  <h2>Highscores</h2>
+  <p>Diese Spielerinnen und Spieler haben Söders Zahl bereits geknackt.</p>
+</header>
+{% if scoreboard %}
+  <ol class="score-list">
+    {% for entry in scoreboard %}
+      <li class="score-item">
+        {% set display_name = (entry.first_name ~ ' ' ~ entry.last_name)|trim %}
+        <span>{{ display_name if display_name else entry.username }}</span>
+        <span>{{ entry.tries }} Versuche</span>
+      </li>
+    {% endfor %}
+  </ol>
+{% else %}
+  <p class="empty-state">Noch keine Ergebnisse gespeichert — hol dir als erster den Spitzenplatz!</p>
+{% endif %}
+
