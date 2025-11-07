@@ -537,7 +537,7 @@
       <div class="hero__content">
         <h2>Starte deinen nächsten Versuch</h2>
         <p>Gib eine Zahl ein, bestätige sie und verfolge deine Fortschritte. Die Hinweise zeigen dir sofort, ob du höher oder niedriger tippen musst.</p>
-        <form id="game-form" class="game-form" method="post">
+        <form id="game-form" class="game-form" method="post" novalidate action="{{ url_for('game.game') }}">
           <div class="game-meta">
             <span class="game-meta__label">Versuche in dieser Runde</span>
             <span id="attempts-value" class="game-meta__value">{{ current_attempts }}</span>
@@ -554,10 +554,10 @@
               max="100"
               value="{{ guess_value }}"
               required>
-            <button class="game-button" type="submit" name="action" value="guess">Raten</button>
+            <button id="guess-btn" class="game-button" type="submit" name="action" value="guess">Raten</button>
           </div>
           <div class="game-actions">
-            <button class="game-button game-button--secondary" type="submit" name="action" value="reset">Neue Zahl starten</button>
+            <button id="reset-btn" class="game-button game-button--secondary" type="submit" name="action" value="reset" formnovalidate>Neue Zahl starten</button>
           </div>
           <div id="feedback" class="game-feedback {% if feedback %}game-feedback--{{ feedback_type or 'info' }}{% endif %}">
             {% if feedback %}
@@ -622,6 +622,134 @@
     const yearLabel = document.getElementById("year");
     if (yearLabel) {
       yearLabel.textContent = new Date().getFullYear();
+    }
+
+    const form = document.getElementById('game-form');
+    const input = document.getElementById('guess');
+    const guessBtn = document.getElementById('guess-btn');
+    const resetBtn = document.getElementById('reset-btn');
+    const feedbackEl = document.getElementById('feedback');
+    const attemptsEl = document.getElementById('attempts-value');
+    const imageEl = document.getElementById('soeder-image');
+    const scoreboardEl = document.getElementById('scoreboard');
+
+    function setFeedback(text, type) {
+      // Reset modifier classes
+      feedbackEl.classList.remove('game-feedback--success','game-feedback--error','game-feedback--hint','game-feedback--info');
+      if (type) {
+        feedbackEl.classList.add(`game-feedback--${type}`);
+      }
+      feedbackEl.textContent = text || '';
+    }
+
+    if (form) {
+      const guessUrl = "{{ url_for('game.game_guess') }}";
+      const resetUrl = "{{ url_for('game.game_reset') }}";
+      // Hidden action input as a robust fallback for browsers without e.submitter
+      const hiddenAction = document.createElement('input');
+      hiddenAction.type = 'hidden';
+      hiddenAction.name = 'action';
+      form.appendChild(hiddenAction);
+
+      function setButtonsDisabled(disabled) {
+        if (guessBtn) guessBtn.disabled = disabled;
+        if (resetBtn) resetBtn.disabled = disabled;
+      }
+
+      async function sendAction(action) {
+        const data = new URLSearchParams();
+        data.set('action', action);
+        if (action === 'guess') {
+          data.set('guess', (input && input.value ? input.value.trim() : ''));
+        }
+
+        try {
+          setButtonsDisabled(true);
+          const url = action === 'reset' ? resetUrl : guessUrl;
+          const res = await fetch(url, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
+              'Accept': 'application/json',
+              'X-Requested-With': 'XMLHttpRequest'
+            },
+            credentials: 'same-origin',
+            body: data.toString()
+          });
+
+          if (res.redirected) {
+            window.location.href = res.url;
+            return;
+          }
+
+          // Flask-Login returns 401 for AJAX when not authenticated
+          if (res.status === 401) {
+            const next = encodeURIComponent(window.location.pathname);
+            window.location.href = `/login?next=${next}`;
+            return;
+          }
+
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+          const ct = res.headers.get('Content-Type') || '';
+          if (!ct.includes('application/json')) {
+            throw new Error('Unexpected response type');
+          }
+
+          const json = await res.json();
+
+          // Update feedback
+          setFeedback(json.feedback || '', json.feedback_type || undefined);
+
+          // Update attempts
+          if (attemptsEl && typeof json.current_attempts === 'number') {
+            attemptsEl.textContent = String(json.current_attempts);
+          }
+
+          // Update image
+          if (imageEl && json.image_url) {
+            imageEl.src = json.image_url;
+          }
+
+          // Update scoreboard if provided
+          if (scoreboardEl && json.scoreboard_html) {
+            scoreboardEl.innerHTML = json.scoreboard_html;
+          }
+
+          // Always clear input after a guess or reset and focus for quick typing
+          if (input) {
+            input.value = '';
+            input.focus();
+          }
+        } catch (err) {
+          setFeedback('Ein Fehler ist aufgetreten. Bitte versuche es erneut.', 'error');
+        } finally {
+          setButtonsDisabled(false);
+        }
+      }
+
+      // Explicit click handlers ensure a request is sent even if submit is blocked
+      if (guessBtn) {
+        guessBtn.addEventListener('click', (e) => {
+          e.preventDefault();
+          hiddenAction.value = 'guess';
+          sendAction('guess');
+        });
+      }
+      if (resetBtn) {
+        resetBtn.addEventListener('click', (e) => {
+          e.preventDefault();
+          hiddenAction.value = 'reset';
+          sendAction('reset');
+        });
+      }
+
+      // Fallback: Enter key in input triggers submit handler
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const action = hiddenAction.value || 'guess';
+        sendAction(action);
+      });
     }
   </script>
 </body>
