@@ -57,6 +57,10 @@ def get_user_by_username(username: str) -> Optional[User]:
     return User.from_row(row) if row else None
 
 
+PASSWORD_HASH_METHOD = "pbkdf2:sha256"
+PASSWORD_SALT_LENGTH = 16
+
+
 def create_user(
     username: str,
     password: str,
@@ -64,7 +68,11 @@ def create_user(
     last_name: str,
     email: str,
 ) -> Optional[User]:
-    password_hash = generate_password_hash(password)
+    password_hash = generate_password_hash(
+        password,
+        method=PASSWORD_HASH_METHOD,
+        salt_length=PASSWORD_SALT_LENGTH,
+    )
     db = get_db()
     try:
         db.execute(

@@ -1,7 +1,11 @@
 import pytest
 
 from src.services.scores import get_scoreboard, record_score
-from src.services.users import create_user, get_user_by_username
+from src.services.users import (
+    PASSWORD_HASH_METHOD,
+    create_user,
+    get_user_by_username,
+)
 
 
 def test_create_user_persists_and_can_be_fetched(app_ctx):
@@ -20,6 +24,7 @@ def test_create_user_persists_and_can_be_fetched(app_ctx):
     assert fetched is not None
     assert fetched.id == user.id
     assert fetched.first_name == "Alice"
+    assert fetched.password_hash.startswith(f"{PASSWORD_HASH_METHOD}:")
 
 
 def test_create_user_duplicate_returns_none(app_ctx):
