@@ -3,12 +3,12 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Zahlenratespiel</title>
+  <title>Söders Mind – Spiel</title>
   <style>
     :root {
       --primary: #2563eb;
       --accent: #fbbf24;
-      --surface: rgba(255,255,255,0.88);
+      --surface: rgba(255,255,255,0.9);
       --text-dark: #1f2937;
       --shadow-md: 0 15px 30px rgba(15,23,42,0.18);
     }
@@ -22,15 +22,15 @@
       color: #fff;
       display: flex;
       flex-direction: column;
-      overflow: hidden;
       position: relative;
+      overflow-x: hidden;
     }
 
     body::before {
       content: "";
       position: fixed;
       inset: 0;
-      background: url("background.png") no-repeat center center fixed;
+      background: url("{{ url_for('static', filename='img/background.png') }}") no-repeat center center fixed;
       background-size: cover;
       z-index: -2;
     }
@@ -39,7 +39,7 @@
       content: "";
       position: fixed;
       inset: 0;
-      background: linear-gradient(180deg, rgba(15,23,42,0.4), rgba(15,23,42,0.85));
+      background: linear-gradient(180deg, rgba(15,23,42,0.45), rgba(15,23,42,0.9));
       z-index: -1;
     }
 
@@ -47,186 +47,582 @@
       flex: 1 0 auto;
       width: min(1100px, 100%);
       margin: 0 auto;
-      padding: clamp(2rem,4vw,3.75rem) clamp(1.5rem,4vw,4.5rem);
+      padding: clamp(2rem,4vw,4rem) clamp(1.5rem,4vw,4.5rem);
       display: flex;
       flex-direction: column;
-      gap: clamp(2rem,4vw,4rem);
+      gap: clamp(2rem,4vw,3.5rem);
+    }
+
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+      padding: .9rem 1.5rem;
+      background: rgba(15,23,42,0.6);
+      border-radius: 1.1rem;
+      box-shadow: var(--shadow-md);
+      backdrop-filter: blur(12px);
+    }
+
+    .brand {
+      color: #fff;
+      font-weight: 700;
+      letter-spacing: .04em;
+      text-decoration: none;
+      font-size: clamp(1.2rem,2vw,1.4rem);
+      display: inline-flex;
+      align-items: center;
+      gap: .4rem;
+    }
+
+    .user-bar {
+      display: flex;
+      align-items: center;
+      gap: .75rem;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .user-bar__greeting {
+      color: rgba(255,255,255,0.75);
+      font-size: .9rem;
+    }
+
+    .user-bar__name {
+      font-weight: 600;
+      font-size: 1rem;
+      color: #fff;
+    }
+
+    .user-bar__actions {
+      display: flex;
+      align-items: center;
+      gap: .65rem;
+      flex-wrap: wrap;
+    }
+
+    .user-bar__action {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: .55rem 1.1rem;
+      border-radius: .95rem;
+      font-weight: 600;
+      text-decoration: none;
+      background: rgba(255,255,255,0.12);
+      color: #fff;
+      transition: transform .2s ease, box-shadow .2s ease, background .2s ease;
+    }
+
+    .user-bar__action:hover {
+      transform: translateY(-1px);
+      background: rgba(255,255,255,0.18);
+      box-shadow: 0 12px 24px rgba(15,23,42,0.22);
+    }
+
+    .user-bar__action--logout {
+      background: rgba(248,113,113,0.18);
+      color: #fecaca;
+    }
+
+    .user-bar__action--logout:hover {
+      background: rgba(248,113,113,0.28);
     }
 
     header {
       text-align: center;
       color: #fff;
+      display: grid;
+      gap: .75rem;
     }
 
     header h1 {
-      margin: 0 0 .5rem;
-      font-size: clamp(2rem,4vw,3.4rem);
+      margin: 0;
+      font-size: clamp(2.2rem,4.5vw,3.5rem);
       font-weight: 700;
+    }
+
+    header p {
+      margin: 0 auto;
+      max-width: 680px;
+      color: rgba(255,255,255,0.9);
+      font-size: clamp(1.05rem,2.5vw,1.25rem);
+      line-height: 1.6;
     }
 
     .hero {
       display: grid;
-      grid-template-columns: minmax(260px,450px) minmax(260px,1fr); /* größer */
-      gap: clamp(1.5rem,4vw,3.5rem);
+      grid-template-columns: minmax(280px, 1fr) minmax(280px, 420px);
+      gap: clamp(2rem,5vw,4rem);
       align-items: center;
+    }
+
+    .hero__content {
+      display: grid;
+      gap: clamp(1.5rem,3vw,2.5rem);
+      background: rgba(15,23,42,0.6);
+      padding: clamp(1.75rem,3vw,2.75rem);
+      border-radius: 1.5rem;
+      box-shadow: var(--shadow-md);
+    }
+
+    .hero__content h2 {
+      margin: 0;
+      font-size: clamp(1.8rem,3.5vw,2.4rem);
+    }
+
+    .hero__content p {
+      margin: 0;
+      color: rgba(255,255,255,0.9);
+      line-height: 1.6;
     }
 
     .hero__figure {
       margin: 0;
       display: flex;
-      justify-content: flex-end;
+      justify-content: center;
     }
 
     .hero__frame {
       position: relative;
-      width: min(450px, 100%); /* größerer Rahmen */
+      width: min(380px, 100%);
       border-radius: 1.5rem;
       overflow: hidden;
+  /* dunklerer Rahmen für stärkeren Kontrast */
+  border: 4px solid rgba(31,41,55,0.95);
       box-shadow: 0 25px 45px rgba(15,23,42,0.4);
-      border: 4px solid rgba(255,255,255,0.35);
+      /* keep frame visuals (border / shadow) above the flag pseudo-layer */
+      background: transparent;
     }
 
-    .hero__image { width: 100%; height: auto; display: block; }
-
-    .bubble-stack {
-      display: grid;
-      gap: clamp(1.5rem,3vw,2.5rem);
-    }
-
-    .bubble {
-      background: var(--surface);
-      color: var(--text-dark);
-      border-radius: 1.75rem;
-      padding: clamp(1.75rem,3vw,2.75rem);
-      box-shadow: var(--shadow-md);
-      text-align: center;
-    }
-
-    .bubble--thought::after, .bubble--thought::before {
+    /* flag background as a pseudo element so border/box-shadow stay on top
+       and we can control the flag opacity separately */
+    .hero__frame::before {
       content: "";
       position: absolute;
-      background: var(--surface);
-      box-shadow: var(--shadow-md);
-      border-radius: 50%;
-    }
-    .bubble--thought::after {
-      bottom: clamp(-2.5rem,-4vw,-3rem);
-      left: clamp(-1.5rem,-4vw,-1rem);
-      width: clamp(1.8rem,4vw,2.5rem);
-      height: clamp(1.8rem,4vw,2.5rem);
-    }
-    .bubble--thought::before {
-      bottom: clamp(-4.25rem,-5vw,-4.5rem);
-      left: clamp(-3.2rem,-6vw,-2.4rem);
-      width: clamp(1.1rem,3vw,1.6rem);
-      height: clamp(1.1rem,3vw,1.6rem);
+      inset: 0;
+      /* place the flag and darken it slightly by compositing a semi-transparent
+         black gradient using multiply blend mode */
+      background: linear-gradient(rgba(0,0,0,0.35), rgba(0,0,0,0.35)), url("{{ url_for('static', filename='img/flagge.jpg') }}");
+      background-position: center;
+      background-size: cover;
+      background-repeat: no-repeat;
+      background-blend-mode: multiply;
+      z-index: 0;
+      border-radius: inherit;
+      pointer-events: none;
     }
 
-    .guess-form {
-      display: flex;
-      flex-direction: column;
+    .hero__image {
+      position: relative;
+      z-index: 2;
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+
+    .game-form {
+      display: grid;
+      gap: 1.35rem;
+    }
+
+    .game-meta {
+      display: inline-flex;
       align-items: center;
-      gap: .8rem;
-      background: none;
-      box-shadow: none;
-      padding: 0;
+      gap: .65rem;
+      background: rgba(15,23,42,0.5);
+      padding: .6rem .95rem;
+      border-radius: .85rem;
+      border: 1px solid rgba(255,255,255,0.18);
+      width: fit-content;
     }
 
-    .guess-form label {
+    .game-meta__label {
+      font-size: .75rem;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: rgba(255,255,255,0.62);
       font-weight: 600;
-      font-size: clamp(1rem,2vw,1.2rem);
-      color: #fff;
     }
 
-    .guess-input {
-      padding: .9rem 1.25rem;
-      font-size: clamp(1rem,2vw,1.2rem);
-      border-radius: .9rem;
-      border: 2px solid rgba(255,255,255,.7);
-      background: rgba(15,23,42,.35);
-      color: #fff;
-      text-align: center;
-      width: min(300px,80%);
-    }
-
-    .guess-input:focus {
-      border-color: var(--accent);
-      box-shadow: 0 0 0 4px rgba(251,191,36,.2);
-      outline: none;
-    }
-
-    .guess-button {
-      padding: .85rem 1.75rem;
-      font-size: clamp(1rem,2vw,1.15rem);
-      border-radius: .9rem;
-      border: none;
+    .game-meta__value {
+      font-size: 1.15rem;
       font-weight: 700;
       color: #fff;
-      background: linear-gradient(135deg,var(--primary),#4c1d95);
-      box-shadow: 0 10px 20px rgba(37,99,235,.32);
-      cursor: pointer;
+      padding: .2rem .65rem;
+      border-radius: .65rem;
+      background: rgba(37,99,235,0.28);
+      box-shadow: inset 0 0 14px rgba(37,99,235,0.25);
     }
 
-    .guess-button:hover { transform: translateY(-2px); }
+    .game-form label {
+      font-weight: 600;
+      font-size: 1rem;
+      color: rgba(255,255,255,0.9);
+    }
+
+    .game-form__controls {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      justify-content: flex-start;
+    }
+
+    .game-actions {
+      display: flex;
+      gap: .75rem;
+      flex-wrap: wrap;
+    }
+
+    .game-input {
+      flex: 1 1 180px;
+      min-width: 0;
+      padding: .9rem 1.1rem;
+      border-radius: .9rem;
+      border: 1px solid rgba(255,255,255,0.28);
+      background: rgba(15,23,42,0.55);
+      color: #fff;
+      font-size: 1.05rem;
+      text-align: center;
+      transition: border-color .2s ease, box-shadow .2s ease;
+    }
+
+    .game-input:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 3px rgba(251,191,36,0.35);
+    }
+
+    .game-button {
+      padding: .95rem 1.8rem;
+      border-radius: .95rem;
+      border: none;
+      font-weight: 600;
+      font-size: 1.05rem;
+      cursor: pointer;
+      background: linear-gradient(135deg, var(--primary), #4c1d95);
+      color: #fff;
+      box-shadow: 0 15px 30px rgba(37,99,235,0.3);
+      transition: transform .2s ease, box-shadow .2s ease;
+    }
+
+    .game-button:hover {
+      transform: translateY(-2px);
+    }
+
+    .game-button--secondary {
+      background: rgba(255,255,255,0.16);
+      color: #fff;
+      box-shadow: 0 15px 28px rgba(15,23,42,0.25);
+    }
+
+    .game-button--secondary:hover {
+      background: rgba(255,255,255,0.24);
+    }
+
+    .game-feedback {
+      border-radius: 1rem;
+      padding: .95rem 1.15rem;
+      border: 1px solid rgba(255,255,255,0.25);
+      background: rgba(15,23,42,0.55);
+      color: rgba(255,255,255,0.85);
+      font-size: .95rem;
+      line-height: 1.55;
+    }
+
+    .game-feedback--success {
+      border-color: rgba(74,222,128,0.4);
+      background: rgba(74,222,128,0.12);
+      color: #bbf7d0;
+    }
+
+    .game-feedback--error {
+      border-color: rgba(248,113,113,0.45);
+      background: rgba(248,113,113,0.14);
+      color: #fecaca;
+    }
+
+    .game-feedback--hint {
+      border-color: rgba(251,191,36,0.4);
+      background: rgba(251,191,36,0.15);
+      color: #fde68a;
+    }
+
+    .game-feedback--info {
+      border-color: rgba(96,165,250,0.4);
+      background: rgba(37,99,235,0.18);
+      color: rgba(191,219,254,0.98);
+    }
+
+    .game-hint {
+      margin: 0;
+      font-size: .95rem;
+      color: rgba(255,255,255,0.75);
+    }
+
+    .game-sections {
+      display: grid;
+      gap: clamp(1.75rem,3vw,2.5rem);
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    }
+
+    .feature-card {
+      background: var(--surface);
+      color: var(--text-dark);
+      border-radius: 1.5rem;
+      padding: clamp(1.5rem,3vw,2.25rem);
+      box-shadow: var(--shadow-md);
+      display: grid;
+      gap: 1rem;
+    }
+
+    .feature-card h3 {
+      margin: 0;
+      font-size: clamp(1.3rem,2.5vw,1.6rem);
+    }
+
+    .feature-card p {
+      margin: 0;
+      line-height: 1.6;
+      color: rgba(31,41,55,0.85);
+    }
+
+    .feature-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: grid;
+      gap: .65rem;
+    }
+
+    .feature-list li {
+      position: relative;
+      padding-left: 1.4rem;
+      color: rgba(31,41,55,0.85);
+      line-height: 1.55;
+    }
+
+    .feature-list li::before {
+      content: "";
+      position: absolute;
+      top: .55rem;
+      left: 0;
+      width: .55rem;
+      height: .55rem;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--primary), #4c1d95);
+      box-shadow: 0 4px 10px rgba(37,99,235,0.35);
+    }
+
+    .scoreboard {
+      background: rgba(15,23,42,0.6);
+      padding: clamp(1.75rem,3vw,2.5rem);
+      border-radius: 1.5rem;
+      box-shadow: var(--shadow-md);
+      display: grid;
+      gap: 1.25rem;
+    }
+
+    .scoreboard header {
+      text-align: left;
+    }
+
+    .scoreboard h2 {
+      margin: 0 0 .5rem;
+      font-size: clamp(1.6rem,3vw,2rem);
+    }
+
+    .scoreboard p {
+      margin: 0;
+      color: rgba(255,255,255,0.85);
+      line-height: 1.6;
+    }
+
+    .score-list {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+      display: grid;
+      gap: .85rem;
+    }
+
+    .score-item {
+      background: var(--surface);
+      color: var(--text-dark);
+      border-radius: 1.1rem;
+      padding: .9rem 1.2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .score-item span {
+      font-weight: 600;
+    }
+
+    .empty-state {
+      margin: 0;
+      color: rgba(255,255,255,0.85);
+    }
 
     footer {
       text-align: center;
-      padding: 1rem;
-      color: rgba(255,255,255,.75);
+      padding: 1.5rem 1rem 2.5rem;
+      color: rgba(255,255,255,0.75);
+      font-size: .95rem;
     }
 
-    @media (max-width:900px){
-      .hero { grid-template-columns: 1fr; justify-items: center; text-align: center; }
-      .hero__figure { justify-content: center; }
-      .bubble-stack { width: min(540px,100%); }
-      .bubble--thought::after,.bubble--thought::before{ left:50%; transform:translateX(-50%);}
+    @media (max-width: 900px) {
+      .hero {
+        grid-template-columns: 1fr;
+      }
+      .hero__content {
+        order: 2;
+      }
+      .hero__figure {
+        order: 1;
+      }
+      .hero__frame {
+        width: min(320px, 80vw);
+      }
     }
 
-    @media (max-width:640px){
-      main{padding:2rem 1rem;}
-      .hero__frame{max-width:min(300px,80vw);}
-      .guess-input{width:100%;}
-      .bubble--thought::after,.bubble--thought::before{display:none;}
+    @media (max-width: 640px) {
+      main {
+        padding: 2rem 1.2rem 3rem;
+      }
+      .game-form__controls {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .game-button {
+        width: 100%;
+      }
+      .score-item {
+        flex-direction: column;
+        align-items: flex-start;
+      }
     }
   </style>
 </head>
 <body>
   <main>
+    <nav class="top-bar">
+      <a class="brand" href="{{ url_for('main.home') }}">Söders Mind</a>
+      <div class="user-bar">
+        {% if current_user.is_authenticated %}
+          {% set display_name = (current_user.first_name ~ ' ' ~ current_user.last_name)|trim %}
+          <span class="user-bar__greeting">Eingeloggt als</span>
+          <span class="user-bar__name">{{ display_name if display_name else current_user.username }}</span>
+          <div class="user-bar__actions">
+            <a class="user-bar__action user-bar__action--logout" href="{{ url_for('auth.logout') }}">Abmelden</a>
+          </div>
+        {% else %}
+          <div class="user-bar__actions">
+            <a class="user-bar__action" href="{{ url_for('auth.login') }}">Einloggen</a>
+            <a class="user-bar__action" href="{{ url_for('auth.register') }}">Registrieren</a>
+          </div>
+        {% endif %}
+      </div>
+    </nav>
+
     <header>
-      <h1>Zahlenratespiel</h1>
+      <h1>Bereit für die geheime Zahl?</h1>
+      <p>Nutze dein Bauchgefühl und etwas Logik, um Söders geheime Zahl in so wenigen Versuchen wie möglich zu erraten.</p>
     </header>
 
     <section class="hero">
+      <div class="hero__content">
+        <h2>Starte deinen nächsten Versuch</h2>
+        <p>Gib eine Zahl ein, bestätige sie und verfolge deine Fortschritte. Die Hinweise zeigen dir sofort, ob du höher oder niedriger tippen musst.</p>
+        <form id="game-form" class="game-form" method="post">
+          <div class="game-meta">
+            <span class="game-meta__label">Versuche in dieser Runde</span>
+            <span id="attempts-value" class="game-meta__value">{{ current_attempts }}</span>
+          </div>
+          <label for="guess">Deine Schätzung</label>
+          <div class="game-form__controls">
+            <input
+              id="guess"
+              name="guess"
+              class="game-input"
+              type="number"
+              placeholder="Zahl zwischen 0 und 100"
+              min="0"
+              max="100"
+              value="{{ guess_value }}"
+              required>
+            <button class="game-button" type="submit" name="action" value="guess">Raten</button>
+          </div>
+          <div class="game-actions">
+            <button class="game-button game-button--secondary" type="submit" name="action" value="reset">Neue Zahl starten</button>
+          </div>
+          <div id="feedback" class="game-feedback {% if feedback %}game-feedback--{{ feedback_type or 'info' }}{% endif %}">
+            {% if feedback %}
+              {{ feedback }}
+            {% else %}
+              Noch kein Tipp abgegeben – leg los und sichere dir den Highscore!
+            {% endif %}
+          </div>
+          <p class="game-hint">Tipp: Beginne in der Mitte und arbeite dich mit den Hinweisen Schritt für Schritt vor.</p>
+        </form>
+      </div>
+
       <figure class="hero__figure">
         <div class="hero__frame">
-          <img class="hero__image" src="söder2.png" alt="Moderator schaut nachdenklich nach rechts.">
+          <img id="soeder-image" class="hero__image" src="{{ image_url }}" alt="Markus Söder fiebert der nächsten Runde entgegen.">
         </div>
       </figure>
-      <div class="bubble-stack">
-        <article class="bubble bubble--thought">
-          <h2>Ich denke an eine Zahl …</h2>
-          <p>Kannst du erraten, an welche? Überlege gut, bevor du auf den Rate-Button klickst!</p>
-        </article>
-        <article class="bubble">
-          <h2>Spieltipps</h2>
-          <p>Starte mit einer Zahl in der Mitte des möglichen Bereichs und arbeite dich Schritt für Schritt vor. So findest du die Lösung am schnellsten!</p>
-        </article>
-      </div>
     </section>
 
-    <form class="guess-form">
-      <label for="guess">Geben Sie hier Ihre Zahl ein:</label>
-      <input id="guess" class="guess-input" type="number" placeholder="Ihre Vermutung" min="0" required>
-      <button class="guess-button" type="submit">Raten</button>
-    </form>
+  <section class="game-sections">
+      <article class="feature-card">
+        <h3>Spieltipps</h3>
+        <p>Beobachte, wie sich der Bereich deiner möglichen Zahlen einschränkt, und reagiere clever auf die Hinweise.</p>
+        <ul class="feature-list">
+          <li>Starte bei 50 und teile den Zahlenraum anschließend immer wieder.</li>
+          <li>Notiere dir deine Versuche, um doppelte Tipps zu vermeiden.</li>
+          <li>Bleib ruhig – Tempo entsteht durch Präzision, nicht durch Hektik.</li>
+        </ul>
+      </article>
+      <article class="feature-card">
+        <h3>So funktioniert das Spiel</h3>
+        <p>Du erhältst nach jedem Versuch sofortige Rückmeldung. Nutze die Infos, um die richtige Zahl logisch einzugrenzen.</p>
+      </article>
+    </section>
+
+  <section id="scoreboard" class="scoreboard">
+      <header>
+        <h2>Highscores</h2>
+        <p>Diese Spielerinnen und Spieler haben Söders Zahl bereits geknackt.</p>
+      </header>
+      {% if scoreboard %}
+        <ol class="score-list">
+          {% for entry in scoreboard %}
+            <li class="score-item">
+              {% set display_name = (entry.first_name ~ ' ' ~ entry.last_name)|trim %}
+              <span>{{ display_name if display_name else entry.username }}</span>
+              <span>{{ entry.tries }} Versuche</span>
+            </li>
+          {% endfor %}
+        </ol>
+      {% else %}
+        <p class="empty-state">Noch keine Ergebnisse gespeichert – hol dir als erster den Spitzenplatz!</p>
+      {% endif %}
+    </section>
   </main>
 
   <footer>
-    © <span id="year"></span> Zahlenratespiel. Viel Erfolg beim Raten!
+    © <span id="year"></span> Söders Mind. Viel Erfolg beim Raten!
   </footer>
 
   <script>
-    document.getElementById("year").textContent = new Date().getFullYear();
+    const yearLabel = document.getElementById("year");
+    if (yearLabel) {
+      yearLabel.textContent = new Date().getFullYear();
+    }
   </script>
 </body>
 </html>
